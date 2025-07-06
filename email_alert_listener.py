@@ -1,11 +1,10 @@
 import imaplib
 import email
 import time
-import subprocess
 import os
 from dotenv import load_dotenv  
-
-
+from send_email import SendEmail  # Assuming send_email.py is in the same directory
+load_dotenv() 
 # Gmail IMAP settings
 IMAP_SERVER = 'imap.gmail.com'
 EMAIL_ACCOUNT = 'simracinggenius@gmail.com'
@@ -36,7 +35,8 @@ def check_for_alerts():
                 print(f'Received TradingView alert: {subject}\n{body}')
                 # Call send_email.py with the alert body
                 try:
-                    subprocess.run(['python', 'send_email.py', body], check=True)
+                    email_sender = SendEmail()
+                    email_sender.sendEmail()  # Assuming this method is defined in send_email.py
                     print('send_email.py executed successfully!')
                 except Exception as e:
                     print(f'Error running send_email.py: {e}')
