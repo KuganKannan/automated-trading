@@ -9,7 +9,7 @@ load_dotenv()
 IMAP_SERVER = 'imap.gmail.com'
 EMAIL_ACCOUNT = 'simracinggenius@gmail.com'
 EMAIL_PASSWORD = os.environ.get("G_PASSWORD")  # Use your Gmail App Password
-TRADINGVIEW_SENDER = 'mseethasree@gmail.com'
+TRADINGVIEW_SENDER = 'noreply@tradingview.com'
 
 # How often to check for new emails (in seconds)
 CHECK_INTERVAL = 10
@@ -25,23 +25,24 @@ def check_for_alerts():
             if result == 'OK':
                 msg = email.message_from_bytes(msg_data[0][1])
                 subject = msg['subject']
-                if msg.is_multipart():
-                    for part in msg.walk():
-                        if part.get_content_type() == 'text/plain':
-                            body = part.get_payload(decode=True).decode()
-                            break
-                else:
-                    body = msg.get_payload(decode=True).decode()
-                print(f'Received TradingView alert: {subject}\n{body}')
-                # Call send_email.py with the alert body
-                try:
-                    email_sender = SendEmail()
-                    email_sender.sendEmail()  # Assuming this method is defined in send_email.py
-                    print('send_email.py executed successfully!')
-                except Exception as e:
-                    print(f'Error running send_email.py: {e}')
-                # Mark email as seen
-                mail.store(num, '+FLAGS', '\\Seen')
+                if subject and "Alert: NIFTY Crossing" in subject:
+                    if msg.is_multipart():
+                        for part in msg.walk():
+                            if part.get_content_type() == 'text/plain':
+                                body = part.get_payload(decode=True).decode()
+                                break
+                    else:
+                        body = msg.get_payload(decode=True).decode()
+                    print(f'Received TradingView alert: {subject}\n{body}')
+                    # Call send_email.py with the alert body
+                    try:
+                        email_sender = SendEmail()
+                        email_sender.sendEmail()  # Assuming this method is defined in send_email.py
+                        print('send_email.py executed successfully!')
+                    except Exception as e:
+                        print(f'Error running send_email.py: {e}')
+                    # Mark email as seen
+                    mail.store(num, '+FLAGS', '\\Seen')
     mail.logout()
 
 def main():
