@@ -9,7 +9,7 @@ load_dotenv()
 IMAP_SERVER = 'imap.gmail.com'
 EMAIL_ACCOUNT = 'simracinggenius@gmail.com'
 EMAIL_PASSWORD = os.environ.get("G_PASSWORD")  # Use your Gmail App Password
-TRADINGVIEW_SENDER = 'ramkicsebe@gmail.com'
+TRADINGVIEW_SENDER = 'mseethasree@gmail.com'
 
 # How often to check for new emails (in seconds)
 CHECK_INTERVAL = 10
