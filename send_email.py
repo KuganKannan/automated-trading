@@ -2,29 +2,18 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-from dhan_connecting import DhanConnecting
 load_dotenv()
 import os
 
 class SendEmail:
     
-    def sendEmail(self):
+    def sendEmail(self, subject, body):
         # Email configuration
         smtp_server = 'smtp.gmail.com'  # e.g., 'smtp.gmail.com'
         smtp_port = 587  # For TLS
         sender_email = 'simracinggenius@gmail.com'
         sender_password = os.environ.get("G_PASSWORD")
         recipients = ['simracinggenius@gmail.com', 'ramkicsebe@gmail.com']
-
-        # Get Dhan positions by running dhan_connecting.py and capturing output
-        try:
-            dhan_connector = DhanConnecting()
-            dhan_output = dhan_connector.get_positions()
-        except Exception as e:
-            dhan_output = f'Error: {e}'
-
-        subject = 'Test Email'
-        body = f'This is a test email sent to two people.\nThis is the output from dhan_connecting.py:\n{dhan_output}'
 
         # Create the email
         msg = MIMEMultipart()
