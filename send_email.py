@@ -13,7 +13,7 @@ class SendEmail:
         smtp_port = 587  # For TLS
         sender_email = 'simracinggenius@gmail.com'
         sender_password = os.environ.get("G_PASSWORD")
-        recipients = ['simracinggenius@gmail.com', 'ramkicsebe@gmail.com']
+        recipients = ['simracinggenius@gmail.com', 'ramkicsebe@gmail.com','mskel73@gmail.com']
 
         # Create the email
         msg = MIMEMultipart()
