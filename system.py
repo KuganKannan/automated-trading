@@ -91,6 +91,7 @@ def check_signal(df_5min):
     t = sub.index[-1].strftime('%H:%M')
 
     if ema5 > sma20 and latest > vwap and rsi > 60:
+        print(f"🚀 {t} BUY SIGNAL - Price: {latest}, RSI: {rsi:.2f}", flush=True)
         logger.info(f"{t} BUY")
         subject = f"BUY SIGNAL at {t}"
         body = (
@@ -104,6 +105,7 @@ def check_signal(df_5min):
         logger.info(f"Attempting to send email - {subject}")
         emailer.sendEmail(subject, body)
     elif ema5 < sma20 and latest < vwap and rsi < 40:
+        print(f"📉 {t} SELL SIGNAL - Price: {latest}, RSI: {rsi:.2f}", flush=True)
         logger.info(f"{t} SELL")
         subject = f"SELL SIGNAL at {t}"
         body = (
@@ -118,6 +120,7 @@ def check_signal(df_5min):
         logger.info(f"Attempting to send email - {subject}")
         emailer.sendEmail(subject, body)
     else:
+        print(f"⚪ {t} NO SIGNAL - Price: {latest}, RSI: {rsi:.2f}", flush=True)
         logger.debug(f"{t} NO SIGNAL")
 
 # --- Dhan marketfeed connection and event loop ---
@@ -154,16 +157,20 @@ def connect_and_run():
                     time.sleep(1)
                     continue
                     
+                print(f"📈 Received response: {response}", flush=True)
                 logger.debug(f"Received response: {response}")
                 
                 # Adapted: call on_tick for each tick in response
                 if isinstance(response, list):
+                    print("📊 Processing list response", flush=True)
                     logger.debug("Processing list response")
                     for tick in response:
+                        print(f"📊 Processing tick: {tick}", flush=True)
                         logger.debug("Processing tick")
                         on_tick(tick)
                         logger.debug("Tick processed")
                 elif isinstance(response, dict):
+                    print("📊 Processing dict response", flush=True)
                     logger.debug("Processing dict response")
                     on_tick(response)
                     logger.debug("Dict response processed")
