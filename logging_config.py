@@ -10,7 +10,7 @@ def setup_logging():
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - [Line %(lineno)d] - %(message)s',
         handlers=[
-            logging.FileHandler('trading.log'),
+            logging.FileHandler('system.log'),
             logging.StreamHandler(sys.stdout)  # Explicitly use stdout
         ],
         force=True  # Force reconfiguration

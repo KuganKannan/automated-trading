@@ -64,7 +64,7 @@ def finalize_minute(min_ts):
 
     # Resample to 5-min candles
     df_1min.index = pd.to_datetime(df_1min.index)
-    df_5min_resampled = df_1min.resample('5T').agg({
+    df_5min_resampled = df_1min.resample('5min').agg({
         'open': 'first',
         'high': 'max',
         'low': 'min',
