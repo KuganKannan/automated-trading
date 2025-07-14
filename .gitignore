@@ -1,3 +1,4 @@
 .env
 trading/** 
 __pycache__
+trading.log
