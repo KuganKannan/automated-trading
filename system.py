@@ -4,8 +4,13 @@ from dhanhq import marketfeed
 from dotenv import load_dotenv
 import os
 from send_email import SendEmail
+from logging_config import setup_logging, get_logger
 
 load_dotenv()
+
+# Setup logging
+setup_logging()
+logger = get_logger(__name__)
 
 # Load credentials from .env
 client_id = os.environ.get("DHAN_CLIENT_ID")
@@ -86,7 +91,7 @@ def check_signal(df_5min):
     t = sub.index[-1].strftime('%H:%M')
 
     if ema5 > sma20 and latest > vwap and rsi > 60:
-        print(f"Line 90: {t} BUY")
+        logger.info(f"{t} BUY")
         subject = f"BUY SIGNAL at {t}"
         body = (
             f"BUY signal generated at {t}\n"
@@ -96,45 +101,105 @@ def check_signal(df_5min):
             f"EMA5: {ema5:.2f}\n"
             f"SMA20: {sma20:.2f}"
         )
-        print(f"Line 100: Attempting to send email - {subject}")
+        logger.info(f"Attempting to send email - {subject}")
         emailer.sendEmail(subject, body)
     elif ema5 < sma20 and latest < vwap and rsi < 40:
-        print(f"Line 102: {t} SELL")
+        logger.info(f"{t} SELL")
         subject = f"SELL SIGNAL at {t}"
         body = (
             f"SELL signal generated at {t}\n"
+            f"Time: {t}\n"
             f"Price: {latest}\n"
             f"RSI: {rsi:.2f}\n"
             f"VWAP: {vwap:.2f}\n"
             f"EMA5: {ema5:.2f}\n"
             f"SMA20: {sma20:.2f}"
         )
-        print(f"Line 112: Attempting to send email - {subject}")
+        logger.info(f"Attempting to send email - {subject}")
         emailer.sendEmail(subject, body)
     else:
-        print(f"Line 114: {t} NO SIGNAL")
+        logger.debug(f"{t} NO SIGNAL")
 
 # --- Dhan marketfeed connection and event loop ---
 
-try:
-    data = marketfeed.DhanFeed(client_id, access_token, instruments, version)
-    while True:
-        data.run_forever()
-        response = data.get_data()
-        print(response)
-        # Adapted: call on_tick for each tick in response
-        if isinstance(response, list):
-            print("Hello2")
-            for tick in response:
-                print("Hello3")
-                on_tick(tick)
-                print("Hello4")
-        elif isinstance(response, dict):
-            print("Hello5")
-            on_tick(response)
-            print("Hello6")
-        # (If your API returns a different structure, adjust as needed)
-except Exception as e:
-    print(f"Line 131: {e}")
+def is_market_open():
+    from datetime import datetime
+    now = datetime.now()
+    # NSE hours: 9:15 AM to 3:30 PM, Monday to Friday
+    if now.weekday() >= 5:  # Saturday = 5, Sunday = 6
+        return False
+    market_start = now.replace(hour=9, minute=15, second=0, microsecond=0)
+    market_end = now.replace(hour=15, minute=30, second=0, microsecond=0)
+    return market_start <= now <= market_end
+
+def connect_and_run():
+    try:
+        if not is_market_open():
+            logger.warning("Market is closed. Exiting...")
+            return False
+        
+        logger.info("Establishing connection to Dhan market feed...")
+        data = marketfeed.DhanFeed(client_id, access_token, instruments, version)
+        
+        while True:
+            try:
+                logger.debug("Before run forever ")
+                data.run_forever()
+                logger.debug("After run forever ")
+                response = data.get_data()
+                logger.debug("Received response from marketfeed")
+                
+                if response is None:
+                    logger.warning("No data received, retrying...")
+                    time.sleep(1)
+                    continue
+                    
+                logger.debug(f"Received response: {response}")
+                
+                # Adapted: call on_tick for each tick in response
+                if isinstance(response, list):
+                    logger.debug("Processing list response")
+                    for tick in response:
+                        logger.debug("Processing tick")
+                        on_tick(tick)
+                        logger.debug("Tick processed")
+                elif isinstance(response, dict):
+                    logger.debug("Processing dict response")
+                    on_tick(response)
+                    logger.debug("Dict response processed")
+                    
+            except Exception as inner_e:
+                logger.error(f"Connection error: {inner_e}")
+                logger.info("Connection lost, will reconnect...")
+                break
+                
+    except Exception as e:
+        logger.error(f"Error establishing connection: {e}")
+        return False
+    
+    return True
+
+# Main loop with reconnection
+while True:
+    try:
+        if connect_and_run():
+            logger.info("Connection ended normally")
+        else:
+            logger.error("Failed to establish connection")
+            
+        if not is_market_open():
+            logger.info("Market closed, exiting...")
+            break
+            
+        logger.info("Reconnecting in 30 seconds...")
+        time.sleep(30)
+        
+    except KeyboardInterrupt:
+        logger.info("Shutting down...")
+        break
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        logger.info("Retrying in 60 seconds...")
+        time.sleep(60)
 
 # Close Connection

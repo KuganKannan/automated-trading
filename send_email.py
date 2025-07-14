@@ -2,8 +2,14 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-load_dotenv()
 import os
+from logging_config import setup_logging, get_logger
+
+load_dotenv()
+
+# Setup logging
+setup_logging()
+logger = get_logger(__name__)
 
 class SendEmail:
     
@@ -29,8 +35,8 @@ class SendEmail:
             server.login(sender_email, sender_password)
             # Send the email
             server.sendmail(sender_email, recipients, msg.as_string())
-            print('Email sent successfully!')
+            logger.info('Email sent successfully!')
         except Exception as e:
-            print(f'Error sending email: {e}')
+            logger.error(f'Error sending email: {e}')
         finally:
             server.quit()
