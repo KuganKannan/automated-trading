@@ -7,7 +7,7 @@ def setup_logging():
     logging.getLogger().handlers.clear()
     
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - [Line %(lineno)d] - %(message)s',
         handlers=[
             logging.FileHandler('system.log'),
