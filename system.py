@@ -125,22 +125,11 @@ def check_signal(df_5min):
 
 # --- Dhan marketfeed connection and event loop ---
 
-def is_market_open():
-    from datetime import datetime
-    now = datetime.now()
-    # NSE hours: 9:15 AM to 3:30 PM, Monday to Friday
-    if now.weekday() >= 5:  # Saturday = 5, Sunday = 6
-        return False
-    market_start = now.replace(hour=9, minute=15, second=0, microsecond=0)
-    market_end = now.replace(hour=15, minute=30, second=0, microsecond=0)
-    return market_start <= now <= market_end
+
 
 def connect_and_run():
     try:
-        if not is_market_open():
-            logger.warning("Market is closed. Exiting...")
-            return False
-        
+
         logger.info("Establishing connection to Dhan market feed...")
         data = marketfeed.DhanFeed(client_id, access_token, instruments, version)
         
@@ -194,9 +183,7 @@ while True:
         else:
             logger.error("Failed to establish connection")
             
-        if not is_market_open():
-            logger.info("Market closed, exiting...")
-            break
+   
             
         logger.info("Reconnecting in 30 seconds...")
         time.sleep(30)
